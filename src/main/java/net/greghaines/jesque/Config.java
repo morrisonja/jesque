@@ -38,6 +38,7 @@ public class Config implements Serializable {
     private final int database;
     private final Set<String> sentinels;
     private final String masterName;
+    private final boolean useSSL;
 
     /**
      * Using a ConfigBuilder is recommended...
@@ -50,8 +51,24 @@ public class Config implements Serializable {
      * @param database  the Redis database to use
      * @see ConfigBuilder
      */
-    public Config(final String host, final int port, final int timeout, final String password, final String namespace, 
-            final int database) {
+    public Config(final String host, final int port, final int timeout, final String password, final String namespace, final int database) {
+        this(host, port, timeout, password, namespace, database, ConfigBuilder.DEFAULT_USE_SSL);
+    }
+
+
+    /**
+     * Using a ConfigBuilder is recommended...
+     *
+     * @param host      the Reds hostname
+     * @param port      the Redis port number
+     * @param timeout   the Redis connection timeout
+     * @param password  the Redis database password
+     * @param namespace the Redis namespace to prefix keys with
+     * @param database  the Redis database to use
+     * @param useSSL    Use SSL to connect to redis
+     * @see ConfigBuilder
+     */
+    public Config(final String host, final int port, final int timeout, final String password, final String namespace, final int database, final boolean useSSL) {
         if (host == null || "".equals(host)) {
             throw new IllegalArgumentException("host must not be null or empty: " + host);
         }
@@ -75,6 +92,7 @@ public class Config implements Serializable {
         this.database = database;
         this.sentinels = null;
         this.masterName = null;
+        this.useSSL = useSSL;
     }
 
     /**
@@ -113,6 +131,7 @@ public class Config implements Serializable {
         this.database = database;
         this.host = ConfigBuilder.DEFAULT_HOST;
         this.port = ConfigBuilder.DEFAULT_PORT;
+        this.useSSL = ConfigBuilder.DEFAULT_USE_SSL;
     }
 
     /**
@@ -172,10 +191,21 @@ public class Config implements Serializable {
     }
 
     /**
+     * @return if SSL is used
+     */
+    public boolean isUseSSL() { return useSSL; }
+
+    /**
      * @return the Redis protocol URI this Config will connect to
      */
     public String getURI() {
-        return "redis://" + this.host + ":" + this.port + "/" + this.database;
+        String uri;
+        if (useSSL) {
+            uri = "rediss://";
+        } else {
+            uri = "redis://";
+        }
+        return uri + this.host + ":" + this.port + "/" + this.database;
     }
 
     /**
@@ -200,6 +230,7 @@ public class Config implements Serializable {
         result = prime * result + ((this.masterName == null) ? 0 : this.masterName.hashCode());
         result = prime * result + this.port;
         result = prime * result + this.timeout;
+        result = prime * result + (this.useSSL ? 1 : 0);
         return result;
     }
 
@@ -217,7 +248,8 @@ public class Config implements Serializable {
                     && JesqueUtils.nullSafeEquals(this.host, other.host)
                     && JesqueUtils.nullSafeEquals(this.namespace, other.namespace)) 
                     && JesqueUtils.nullSafeEquals(this.sentinels, other.sentinels) 
-                    && JesqueUtils.nullSafeEquals(this.masterName, other.masterName);
+                    && JesqueUtils.nullSafeEquals(this.masterName, other.masterName)
+                    && this.useSSL == other.useSSL;
         }
         return equal;
     }

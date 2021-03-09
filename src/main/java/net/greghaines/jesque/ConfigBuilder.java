@@ -45,6 +45,8 @@ public class ConfigBuilder implements Serializable {
     public static final HashSet<String> DEFAULT_SENTINELS = null;
     /** null */
     public static final String DEFAULT_MASTERNAME = null;
+    /** false */
+    public static final boolean DEFAULT_USE_SSL = false;
 
     /**
      * @return a Config with all the default values set
@@ -61,6 +63,7 @@ public class ConfigBuilder implements Serializable {
     private Set<String> sentinels = DEFAULT_SENTINELS;
     private String masterName = DEFAULT_MASTERNAME;
     private int database = DEFAULT_DATABASE;
+    private boolean useSSL = DEFAULT_USE_SSL;
 
     /**
      * No-arg constructor.
@@ -86,6 +89,7 @@ public class ConfigBuilder implements Serializable {
         this.database = startingPoint.getDatabase();
         this.sentinels = startingPoint.getSentinels();
         this.masterName = startingPoint.getMasterName();
+        this.useSSL = startingPoint.isUseSSL();
     }
 
     /**
@@ -198,6 +202,17 @@ public class ConfigBuilder implements Serializable {
             throw new IllegalArgumentException("masterName is null or empty: " + masterName);
         }
         this.masterName = masterName;
+        return this;
+    }
+
+    /**
+     * Configs created by this ConfigBuilder will use use SSL
+     *
+     * @param useSSL If SSL is to be used to connect with redis
+     * @return this ConfigBuilder
+     */
+    public ConfigBuilder withSSL(final boolean useSSL) {
+        this.useSSL = useSSL;
         return this;
     }
 
